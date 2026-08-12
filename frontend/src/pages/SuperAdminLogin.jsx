@@ -32,7 +32,7 @@ export default function SuperAdminLogin() {
         toast.success('Super Admin Authenticated!')
         navigate('/admin/super')
       } else {
-        toast.error('Authentication failed. Default password is "admin2026".')
+        toast.error('Authentication failed. Incorrect Super Admin password.')
       }
     } finally {
       setLoading(false)
@@ -147,7 +147,6 @@ export default function SuperAdminLogin() {
                   <input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
                     className="block w-full pl-10 pr-3 py-3 border border-outline-variant bg-surface-container-lowest text-on-surface rounded font-body-md text-body-md outline-none focus:border-secondary" />
                 </div>
-                <p className="text-xs text-on-surface-variant">Default password: <code className="bg-surface-container px-1 py-0.5 rounded font-bold text-primary">admin2026</code></p>
               </div>
 
               <button type="submit" disabled={loading}

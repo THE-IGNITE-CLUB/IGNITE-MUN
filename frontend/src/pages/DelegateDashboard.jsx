@@ -11,6 +11,7 @@ export default function DelegateDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [file, setFile] = useState(null)
   const [activeSession, setActiveSession] = useState(null)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
 
   // Query & Secretariat Support state
   const [queries, setQueries] = useState([])
@@ -216,11 +217,11 @@ export default function DelegateDashboard() {
               {/* Quick actions */}
               <div className="md:col-span-5 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-3">
                 <h3 className="font-headline-md text-headline-md text-primary font-bold mb-2">Quick Actions</h3>
-                <a href={`/api/export/receipt/${user.id}`} target="_blank" rel="noreferrer"
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md transition-colors bg-secondary text-on-secondary hover:bg-primary font-bold">
+                <button onClick={() => setShowReceiptModal(true)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md transition-colors bg-secondary text-on-secondary hover:bg-primary font-bold shadow-sm">
                   <span className="material-symbols-outlined">receipt_long</span>
                   Download Official Payment Receipt (PDF)
-                </a>
+                </button>
                 {[
                   { label: 'Ask Secretariat & View Responses', icon: 'question_answer', action: () => setActiveTab('queries'), primary: true },
                   { label: 'Upload Position Paper', icon: 'upload_file', action: () => setActiveTab('position_paper'), primary: false },
@@ -387,6 +388,82 @@ export default function DelegateDashboard() {
               )}
             </div>
           )}
+
+        {/* --- OFFICIAL PAYMENT RECEIPT MODAL --- */}
+        {showReceiptModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+            <div className="bg-white text-slate-900 rounded-xl max-w-xl w-full p-8 shadow-2xl relative border border-slate-200" id="printable-receipt">
+              <button onClick={() => setShowReceiptModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 print:hidden">
+                <span className="material-symbols-outlined text-2xl">close</span>
+              </button>
+
+              <div className="text-center border-b border-slate-200 pb-4 mb-6">
+                <div className="inline-block px-3 py-1 bg-slate-900 text-amber-400 font-bold text-xs rounded-full uppercase tracking-wider mb-2">
+                  IGNITE MUN 2026 OFFICIAL RECEIPT
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Sri Venkateswara University</h2>
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">College of Engineering (SVUCE), Tirupati</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200/80">
+                <div>
+                  <span className="text-[11px] text-slate-500 uppercase font-bold block">Receipt Number</span>
+                  <span className="font-mono font-bold text-slate-900 text-base">IGNITE-REC-2026-00{user.id || '1'}</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 uppercase font-bold block">Issued Date</span>
+                  <span className="font-mono font-bold text-slate-900 text-base">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 uppercase font-bold block">Delegate Full Name</span>
+                  <span className="font-bold text-slate-900">{user.name || 'Delegate'}</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 uppercase font-bold block">Delegate Official ID</span>
+                  <span className="font-mono font-bold text-slate-900 text-secondary">{user.user_id || 'DEL-2026-001'}</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 uppercase font-bold block">Allotted Committee</span>
+                  <span className="font-bold text-slate-900">{user.committee || 'UNSC'}</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-slate-500 uppercase font-bold block">Allotted Delegation</span>
+                  <span className="font-bold text-slate-900">{user.delegation_assigned || 'Awaiting Portfolio'}</span>
+                </div>
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg mb-6">
+                <div className="flex justify-between items-center text-sm font-bold border-b border-emerald-200/60 pb-2 mb-2">
+                  <span className="text-slate-800">Delegate Registration Fee</span>
+                  <span className="text-emerald-800 text-base font-extrabold">{user.payment_status === 'free' ? '₹0.00 (Free Early Slot)' : '₹1,200.00 INR'}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-600 font-semibold">Payment Status</span>
+                  <span className="font-extrabold text-emerald-700 uppercase tracking-wide bg-emerald-100 px-2 py-0.5 rounded">PAID &amp; VERIFIED ✓</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-end text-xs text-slate-500 border-t border-slate-200 pt-4">
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">IGNITE MUN 2026 Secretariat</p>
+                  <p>SVUCE Campus, Tirupati, AP, India</p>
+                </div>
+                <div className="text-right">
+                  <div className="inline-block border-b border-slate-400 px-6 py-1 text-slate-800 font-serif italic text-sm font-bold">Secretariat Registrar</div>
+                  <p className="mt-1 text-[10px] text-slate-400">Computer Generated Official Receipt</p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 print:hidden border-t border-slate-100 pt-4">
+                <button onClick={() => window.print()}
+                  className="w-full py-3 bg-slate-900 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-800 shadow-md">
+                  <span className="material-symbols-outlined text-lg">print</span>
+                  Print / Save Official Receipt PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
       </main>
     </PageWrapper>
