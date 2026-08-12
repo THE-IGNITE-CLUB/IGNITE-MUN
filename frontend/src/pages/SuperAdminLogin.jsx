@@ -65,7 +65,7 @@ export default function SuperAdminLogin() {
       }
     }
 
-    toast.success(`Verification code dispatched to manas.malla13@gmail.com! (Code: ${genCode})`)
+    toast.success('Verification code dispatched to manas.malla13@gmail.com. Please check your email inbox.')
     setResetStep(2)
     setOtpLoading(false)
   }
@@ -204,7 +204,7 @@ export default function SuperAdminLogin() {
                 <form onSubmit={handleResetPassword} className="space-y-4">
                   <div className="bg-surface-container-low p-3 rounded text-xs text-on-surface border border-outline-variant">
                     Verification code dispatched to <strong>manas.malla13@gmail.com</strong>.
-                    {demoCode && <div className="mt-1 text-primary font-mono text-sm font-bold">Verification Code: {demoCode}</div>}
+                    <div className="mt-1 text-on-surface-variant text-[11px]">Check your email inbox for the 6-digit security verification code.</div>
                   </div>
 
                   <div>

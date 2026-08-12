@@ -99,9 +99,89 @@ export default function DelegateDashboard() {
         'Proposed National Testing Framework and digital proctoring',
       ],
     },
+    INTERNATIONAL_PRESS: {
+      title: 'Media Ethics, Crisis Reporting, and Press Freedom in Conflict Zones',
+      subtitle: 'International Press Background Paper',
+      color: 'bg-surface-container-lowest',
+      points: [
+        'Journalistic verification protocols in fast-moving crisis reporting',
+        'Ethical boundaries in photojournalism and political caricature',
+        'Combatting state disinformation and AI-generated synthetic media',
+        'Protection of press corps delegates in hostile environment zones',
+        'Standards for editorial dispatches and live conference reporting',
+      ],
+    },
   }
 
   const bg = backgrounds[user.committee] || backgrounds.UNSC
+
+  const downloadBackgroundGuidePDF = () => {
+    const committeeName = user.committee || 'UNSC'
+    const bgData = backgrounds[committeeName] || backgrounds.UNSC
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast.error('Pop-up blocked. Please allow pop-ups to download PDF.')
+      return
+    }
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>IGNITE MUN 2026 — Background Guide (${committeeName})</title>
+        <style>
+          body { font-family: 'Georgia', 'Times New Roman', serif; margin: 40px; color: #111; line-height: 1.6; }
+          .header { text-align: center; border-bottom: 3px double #111; padding-bottom: 16px; margin-bottom: 24px; }
+          .header h1 { margin: 0; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; }
+          .header p { margin: 4px 0 0; font-size: 13px; font-weight: bold; color: #444; }
+          .meta { display: flex; justify-content: space-between; font-size: 13px; font-style: italic; border-bottom: 1px solid #ccc; padding-bottom: 8px; margin-bottom: 24px; }
+          .section-title { font-size: 16px; font-weight: bold; margin-top: 24px; margin-bottom: 10px; color: #000; border-bottom: 1px solid #000; text-transform: uppercase; }
+          .point { margin-bottom: 14px; font-size: 14px; background: #f9f9f9; padding: 10px 14px; border-left: 4px solid #111; }
+          .footer { margin-top: 50px; text-align: center; font-size: 11px; color: #666; border-top: 1px solid #ddd; pt: 12px; }
+          @media print {
+            body { margin: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>IGNITE MUN 2026</h1>
+          <p>OFFICIAL BACKGROUND GUIDE & CONFERENCE DOSSIER</p>
+          <p>Sri Venkateswara University College of Engineering (SVUCE), Tirupati</p>
+        </div>
+
+        <div class="meta">
+          <span>Committee: <strong>${committeeName}</strong></span>
+          <span>Conference Year: <strong>2026</strong></span>
+        </div>
+
+        <h2 style="font-size: 20px; margin-bottom: 4px;">${bgData.title}</h2>
+        <p style="font-size: 13px; color: #444; font-weight: bold; margin-top: 0;">${bgData.subtitle}</p>
+
+        <div class="section-title">I. Executive Summary &amp; Agenda Overview</div>
+        <p style="font-size: 14px;">This official background guide serves as the primary research dossier for delegates allotted to ${committeeName} at IGNITE MUN 2026. Delegates are instructed to review historical precedents, institutional mandates, and foreign policy directives outlined in this document before drafting Position Papers.</p>
+
+        <div class="section-title">II. Key Points of Debate &amp; Research Mandate</div>
+        ${bgData.points.map((p, i) => `<div class="point"><strong>Topic ${i+1}:</strong> ${p}</div>`).join('')}
+
+        <div class="section-title">III. Position Paper Guidelines</div>
+        <p style="font-size: 14px;">All delegates must submit a 1 to 2 page Position Paper covering: (1) Foreign Policy Stance &amp; Precedents, (2) UN / Parliamentary Measures &amp; Debates, and (3) Actionable Resolution Clauses &amp; Directives.</p>
+
+        <div class="footer">
+          <p>© IGNITE MUN 2026 Secretariat · SVUCE Campus, Tirupati · Official Conference Guide</p>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          }
+        </script>
+      </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
 
   return (
     <PageWrapper className="!flex-row">
@@ -358,11 +438,11 @@ export default function DelegateDashboard() {
                     <p className="font-body-md text-body-md text-on-surface">{p}</p>
                   </div>
                 ))}
-                <a href="/api/export/delegates.pdf" target="_blank"
-                  className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-primary text-on-primary rounded font-label-md text-label-md hover:bg-secondary transition-colors font-bold shadow-sm">
+                <button onClick={downloadBackgroundGuidePDF}
+                  className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-primary text-on-primary rounded font-label-md text-label-md hover:bg-secondary transition-colors font-bold shadow-sm cursor-pointer">
                   <span className="material-symbols-outlined">download</span>
                   Download Full Background Guide (PDF)
-                </a>
+                </button>
               </div>
             </div>
           )}

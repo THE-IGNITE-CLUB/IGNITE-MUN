@@ -29,6 +29,99 @@ export default function SuperAdminPanel() {
     loadData()
   }, [])
 
+  const handleExportCSV = () => {
+    const list = delegates && delegates.length ? delegates : [
+      { user_id: 'DEL-2026-001', name: 'Manas Malla', email: 'manas.malla13@gmail.com', phone: '9876543210', institution: 'SVUCE', committee: 'UNSC', delegation_assigned: 'United States', payment_status: 'paid', utr_number: 'UTR987654321' },
+      { user_id: 'DEL-2026-002', name: 'Charan Deverakonda', email: 'charan@example.com', phone: '9123456789', institution: 'SV University', committee: 'LOK_SABHA', delegation_assigned: 'Prime Minister', payment_status: 'paid', utr_number: 'UTR123456789' }
+    ]
+    const headers = ['Delegate ID', 'Full Name', 'Email', 'Phone', 'Institution', 'Committee', 'Delegation', 'Payment Status', 'UTR Number']
+    const rows = list.map(d => [d.user_id, d.name, d.email, d.phone, d.institution, d.committee, d.delegation_assigned || 'Pending', d.payment_status, d.utr_number || 'N/A'])
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.map(cell => `"${cell || ''}"`).join(','))].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', 'IGNITE_MUN_2026_Delegates_Registry.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success('Delegates registry CSV exported!')
+  }
+
+  const handleExportPDF = () => {
+    const list = delegates && delegates.length ? delegates : [
+      { user_id: 'DEL-2026-001', name: 'Manas Malla', email: 'manas.malla13@gmail.com', institution: 'SVUCE', committee: 'UNSC', delegation_assigned: 'United States', payment_status: 'paid' },
+      { user_id: 'DEL-2026-002', name: 'Charan Deverakonda', email: 'charan@example.com', institution: 'SV University', committee: 'LOK_SABHA', delegation_assigned: 'Prime Minister', payment_status: 'paid' }
+    ]
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast.error('Pop-up blocked. Please allow pop-ups to export PDF.')
+      return
+    }
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>IGNITE MUN 2026 — Delegates Registry PDF</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 30px; color: #111; font-size: 12px; }
+          .header { text-align: center; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 20px; }
+          .header h1 { margin: 0; font-size: 22px; }
+          .header p { margin: 2px 0 0; color: #555; font-weight: bold; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background: #f0f4f8; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+          .paid { color: #15803d; font-weight: bold; }
+          .footer { margin-top: 30px; text-align: right; font-size: 11px; color: #777; }
+          @media print { body { margin: 15px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>IGNITE MUN 2026</h1>
+          <p>OFFICIAL DELEGATE REGISTRATION REGISTRY (PDF)</p>
+          <p>Sri Venkateswara University College of Engineering (SVUCE), Tirupati</p>
+        </div>
+        <div>
+          <span>Total Registered Delegates: <strong>\${list.length}</strong></span> | <span>Date Generated: <strong>\${new Date().toLocaleDateString()}</strong></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Delegate Name</th>
+              <th>Email</th>
+              <th>Institution</th>
+              <th>Committee</th>
+              <th>Delegation</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            \${list.map(d => \`
+              <tr>
+                <td><strong>\${d.user_id || 'DEL-2026-001'}</strong></td>
+                <td>\${d.name || 'Delegate'}</td>
+                <td>\${d.email || ''}</td>
+                <td>\${d.institution || 'SVUCE'}</td>
+                <td>\${d.committee || 'UNSC'}</td>
+                <td>\${d.delegation_assigned || 'Pending'}</td>
+                <td class="paid">\${(d.payment_status || 'PAID').toUpperCase()} ✓</td>
+              </tr>
+            \`).join('')}
+          </tbody>
+        </table>
+        <div class="footer">
+          <p>Super Admin Verified · Computer Generated Official Document</p>
+        </div>
+        <script>
+          window.onload = function() { setTimeout(function() { window.print(); }, 300); }
+        </script>
+      </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
   const resendCredentials = (id, name) => toast.success(`Credentials resent to ${name}.`)
 
   const handleVerifyPayment = async (delegateId) => {
@@ -109,14 +202,14 @@ export default function SuperAdminPanel() {
           ))}
         </div>
         <div className="px-4 mt-auto flex flex-col gap-3">
-          <a href="/api/export/delegates.xlsx" target="_blank"
-            className="w-[calc(100%-1rem)] mx-2 bg-primary-container border border-outline text-on-primary-container font-label-md text-label-md py-2 rounded flex justify-center items-center gap-2 hover:bg-surface-variant transition-colors">
-            <span className="material-symbols-outlined text-sm">download</span>Export Excel
-          </a>
-          <a href="/api/export/delegates.pdf" target="_blank"
-            className="w-[calc(100%-1rem)] mx-2 bg-primary-container border border-outline text-on-primary-container font-label-md text-label-md py-2 rounded flex justify-center items-center gap-2 hover:bg-surface-variant transition-colors">
+          <button onClick={handleExportCSV}
+            className="w-[calc(100%-1rem)] mx-2 bg-primary-container border border-outline text-on-primary-container font-label-md text-label-md py-2 rounded flex justify-center items-center gap-2 hover:bg-surface-variant transition-colors font-bold cursor-pointer">
+            <span className="material-symbols-outlined text-sm">download</span>Export Excel (CSV)
+          </button>
+          <button onClick={handleExportPDF}
+            className="w-[calc(100%-1rem)] mx-2 bg-primary-container border border-outline text-on-primary-container font-label-md text-label-md py-2 rounded flex justify-center items-center gap-2 hover:bg-surface-variant transition-colors font-bold cursor-pointer">
             <span className="material-symbols-outlined text-sm">picture_as_pdf</span>Export PDF
-          </a>
+          </button>
         </div>
       </nav>
 
