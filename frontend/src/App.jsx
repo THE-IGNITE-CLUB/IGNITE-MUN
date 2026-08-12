@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 
 // Pages
 import Home from './pages/Home'
@@ -29,14 +30,30 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<DelegateDashboard />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute allowedRoles={['delegate']}>
+              <DelegateDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/organizer/register" element={<OrganizerRegister />} />
           <Route path="/admin/login" element={<SuperAdminLogin />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/eb" element={<EBCommandCenter />} />
-          <Route path="/admin/super" element={<SuperAdminPanel />} />
+          <Route path="/admin" element={
+            <ProtectedRoute allowedRoles={['super_admin', 'eb', 'oc', 'admin']}>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/eb" element={
+            <ProtectedRoute allowedRoles={['super_admin', 'eb', 'admin']}>
+              <EBCommandCenter />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/super" element={
+            <ProtectedRoute allowedRoles={['super_admin']}>
+              <SuperAdminPanel />
+            </ProtectedRoute>
+          } />
           <Route path="/campus" element={<CampusExplore />} />
           <Route path="/hybrid-diplomacy" element={<HybridDiplomacy />} />
           <Route path="*" element={<NotFound />} />

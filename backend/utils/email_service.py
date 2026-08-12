@@ -1,5 +1,5 @@
 from flask_mail import Message
-from app import mail
+from extensions import mail
 import os
 
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'manas.malla13@gmail.com')
@@ -27,8 +27,8 @@ def send_organizer_approval_request(organizer):
                 </table>
                 <p style="color:#45464d;"><strong>Statement:</strong> {organizer.statement or 'N/A'}</p>
                 <div style="margin-top:24px; display:flex; gap:12px;">
-                    <a href="{approve_link}" style="background:#006c49; color:#fff; padding:12px 24px; border-radius:4px; text-decoration:none; font-weight:600;">✓ Approve</a>
-                    <a href="{reject_link}" style="background:#ba1a1a; color:#fff; padding:12px 24px; border-radius:4px; text-decoration:none; font-weight:600; margin-left:12px;">✗ Reject</a>
+                    <a href="{approve_link}" style="background:#006c49; color:#fff; padding:12px 24px; border-radius:4px; text-decoration:none; font-weight:600;">Approve</a>
+                    <a href="{reject_link}" style="background:#ba1a1a; color:#fff; padding:12px 24px; border-radius:4px; text-decoration:none; font-weight:600; margin-left:12px;">Reject</a>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@ def send_credentials_email(recipient_email, name, user_id, password, role='deleg
                 <p style="color:#45464d;">Login at: <a href="http://localhost:5173/login" style="color:#006c49;">http://localhost:5173/login</a></p>
                 <p style="color:#76777d; font-size:12px; margin-top:24px;">This is an automated email. Please do not reply directly.</p>
             </div>
-            <p style="text-align:center; color:#76777d; font-size:11px; margin-top:16px;">Made with ❤️ by Malla Manas and Devarakonda Charan</p>
+            <p style="text-align:center; color:#76777d; font-size:11px; margin-top:16px;">Made for IGNITE MUN 2026</p>
         </div>
         """
     )
@@ -105,19 +105,41 @@ def send_payment_confirmation(recipient_email, name, user_id, amount):
                 <p style="margin:4px 0 0; opacity:0.7;">Payment Confirmation</p>
             </div>
             <div style="background:#fff; padding:32px; border:1px solid #e0e3e5; border-radius:0 0 8px 8px;">
-                <div style="text-align:center; margin-bottom:24px;">
-                    <div style="width:64px; height:64px; background:#6cf8bb; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:32px;">✓</div>
-                </div>
                 <h2 style="color:#131b2e; text-align:center;">Registration Confirmed!</h2>
-                <p style="color:#45464d; text-align:center;">Dear {name}, your payment of ₹{amount} has been processed.</p>
+                <p style="color:#45464d; text-align:center;">Dear {name}, your payment of Rs.{amount} has been processed.</p>
                 <div style="background:#f2f4f6; border-radius:8px; padding:16px; margin:20px 0;">
                     <p style="margin:4px 0; color:#76777d; font-size:12px;">DELEGATE ID</p>
                     <p style="margin:0 0 12px; color:#131b2e; font-weight:700; font-family:monospace; font-size:18px;">{user_id}</p>
                     <p style="margin:4px 0; color:#76777d; font-size:12px;">AMOUNT PAID</p>
-                    <p style="margin:0; color:#131b2e; font-weight:700; font-size:18px;">₹{amount}</p>
+                    <p style="margin:0; color:#131b2e; font-weight:700; font-size:18px;">Rs.{amount}</p>
                 </div>
             </div>
-            <p style="text-align:center; color:#76777d; font-size:11px; margin-top:16px;">Made with ❤️ by Malla Manas and Devarakonda Charan</p>
+        </div>
+        """
+    )
+    mail.send(msg)
+
+def send_otp_email(recipient_email, otp_code):
+    """Send Super Admin password reset verification code email."""
+    msg = Message(
+        subject="[IGNITE MUN 2026] Super Admin Password Reset Verification Code",
+        recipients=[recipient_email],
+        html=f"""
+        <div style="font-family: 'Source Sans 3', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background:#f7f9fb; border-radius: 12px;">
+            <div style="background:#131b2e; color:#fff; padding:24px; border-radius:8px 8px 0 0;">
+                <h1 style="margin:0; font-size:24px;">IGNITE MUN 2026</h1>
+                <p style="margin:4px 0 0; opacity:0.7; font-size:14px;">Super Admin Security Verification</p>
+            </div>
+            <div style="background:#fff; padding:32px; border-radius:0 0 8px 8px; border:1px solid #e0e3e5;">
+                <h2 style="color:#131b2e;">Super Admin Password Reset Request</h2>
+                <p style="color:#45464d;">You have requested to change the Super Admin portal password. Use the verification code below to authorize this request:</p>
+                <div style="background:#f2f4f6; border:2px dashed #006c49; border-radius:8px; padding:20px; text-align:center; margin:24px 0;">
+                    <p style="margin:0 0 4px; color:#76777d; font-size:12px; text-transform:uppercase; letter-spacing:0.1em;">Your 6-Digit Verification Code</p>
+                    <p style="margin:0; color:#006c49; font-size:36px; font-weight:800; font-family:monospace; letter-spacing:0.2em;">{otp_code}</p>
+                </div>
+                <p style="color:#ba1a1a; font-size:13px;">[WARNING] This verification code is valid for 15 minutes. Do not share this code with anyone.</p>
+                <p style="color:#76777d; font-size:12px; margin-top:24px;">If you did not request a password change, please ignore this email.</p>
+            </div>
         </div>
         """
     )

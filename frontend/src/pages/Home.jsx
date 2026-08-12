@@ -133,15 +133,19 @@ export default function Home() {
           <div className="max-w-[1280px] mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="order-2 lg:order-1">
-                <div className="w-full h-[400px] bg-surface-container rounded-xl overflow-hidden border border-outline-variant/30 institutional-shadow relative">
-                  <div className="absolute inset-0 bg-surface-container flex flex-col items-center justify-center text-on-surface-variant">
-                    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">map</span>
-                    <span className="font-label-md text-label-md">Interactive Campus Map</span>
-                    <span className="font-body-md text-body-md text-sm mt-1">Sri Venkateswara University, Tirupati</span>
-                  </div>
-                  <img className="w-full h-full object-cover opacity-30 mix-blend-multiply"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqceUxymJ6olXbk_CuLgzmBoMD3KZ-LKjV2UpDHGd1Nq6xhR_FZMr-7AOAMADKw7PIJJZ6_ad4lR0fs_piOLYIHXXevMyVjFDePKUkjqY3qYhl4WOoXZxq6fjBJ86vfU6zgIYDxWMXXFlklJm9g_dv040RH_P27Q1H9uscfb0RCqFtKgEOMuAaFuPqsmbY6SympRCCw2HBGwp8xQXf7Q_rjgG02bZfyeyky78Uvpd56QliPETHe-JI"
-                    alt="SVU Campus Map" />
+                <div className="w-full h-[400px] rounded-xl overflow-hidden border border-outline-variant shadow-md relative">
+                  <iframe
+                    title="Sri Venkateswara University College of Engineering Google Map"
+                    src="https://maps.google.com/maps?q=Sri%20Venkateshwara%20University%20College%20of%20Engineering%20Tirupati&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen=""
+                    loading="lazy"
+                  />
+                  <Link to="/campus" className="absolute top-4 right-4 bg-primary text-on-primary px-3 py-1.5 rounded text-xs font-bold shadow hover:bg-secondary transition-colors flex items-center gap-1">
+                    Full Campus View <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                  </Link>
                 </div>
               </div>
               <div className="order-1 lg:order-2">

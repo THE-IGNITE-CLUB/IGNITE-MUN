@@ -16,6 +16,10 @@ const UNSC_COUNTRIES = [
   'India', 'Germany', 'Japan', 'Brazil', 'South Africa',
   'Saudi Arabia', 'Israel', 'Iran', 'Turkey', 'Australia',
 ]
+const IP_POSITIONS = [
+  'International Press Reporter', 'Investigative Journalist', 'Political Photojournalist',
+  'Caricaturist / Satirist', 'Chief Editor', 'Head of Photography'
+]
 
 export default function Register() {
   const navigate = useNavigate()
@@ -26,7 +30,7 @@ export default function Register() {
     position_4: '', position_5: '', mun_experience: '',
   })
   const [loading, setLoading] = useState(false)
-  const positions = form.committee === 'UNSC' ? UNSC_COUNTRIES : LOK_SABHA_POSITIONS
+  const positions = form.committee === 'UNSC' ? UNSC_COUNTRIES : form.committee === 'INTERNATIONAL_PRESS' ? IP_POSITIONS : LOK_SABHA_POSITIONS
 
   useEffect(() => {
     axios.get('/api/stats').then(r => setStats(r.data)).catch(() => {})
@@ -135,13 +139,17 @@ export default function Register() {
               {/* Committee Preference */}
               <div className="space-y-5">
                 <h3 className="font-headline-md text-headline-md text-primary-container text-xl border-b border-outline/10 pb-2">Committee Preference</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[{ val: 'UNSC', label: 'UNSC', sub: 'United Nations Security Council' }, { val: 'LOK_SABHA', label: 'Lok Sabha', sub: 'Indian Parliament Lower House' }].map(opt => (
-                    <label key={opt.val} className={`relative flex cursor-pointer rounded-lg border p-4 shadow-sm transition-colors duration-200 ${form.committee === opt.val ? 'border-primary-container bg-surface' : 'border-outline-variant bg-surface-container-lowest hover:bg-surface'}`}>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    { val: 'UNSC', label: 'UNSC', sub: 'United Nations Security Council' },
+                    { val: 'LOK_SABHA', label: 'Lok Sabha', sub: 'Parliamentary Proceedings' },
+                    { val: 'INTERNATIONAL_PRESS', label: 'International Press (IP)', sub: 'Journalists, Photographers & Caricaturists' }
+                  ].map(opt => (
+                    <label key={opt.val} className={`relative flex cursor-pointer rounded-lg border p-4 shadow-sm transition-colors duration-200 ${form.committee === opt.val ? 'border-primary-container bg-surface font-bold' : 'border-outline-variant bg-surface-container-lowest hover:bg-surface'}`}>
                       <input type="radio" name="committee" value={opt.val} checked={form.committee === opt.val} onChange={handle} className="sr-only" />
                       <span className="flex flex-1 flex-col">
                         <span className="block font-label-md text-label-md text-primary-container">{opt.label}</span>
-                        <span className="mt-1 text-sm text-on-surface-variant font-body-md text-body-md">{opt.sub}</span>
+                        <span className="mt-1 text-xs text-on-surface-variant font-body-md">{opt.sub}</span>
                       </span>
                       <span className={`material-symbols-outlined ${form.committee === opt.val ? 'text-primary-container icon-filled' : 'text-outline'}`}>
                         {form.committee === opt.val ? 'radio_button_checked' : 'radio_button_unchecked'}
@@ -156,7 +164,7 @@ export default function Register() {
                     Position Preferences (select up to 5, in order of preference) *
                   </label>
                   <p className="text-sm text-on-surface-variant font-body-md mb-3">
-                    {form.committee === 'UNSC' ? 'Select country portfolios for UNSC.' : 'Select politician portfolios for Lok Sabha.'}
+                    {form.committee === 'UNSC' ? 'Select country portfolios for UNSC.' : form.committee === 'INTERNATIONAL_PRESS' ? 'Select press media roles for International Press.' : 'Select parliamentary portfolios for Lok Sabha Parliamentary Proceedings.'}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[1,2,3,4,5].map(n => (

@@ -1,5 +1,5 @@
 from flask import Blueprint, send_file, jsonify
-from app import db
+from extensions import db
 from models import Delegate, Score, Session
 import io
 import openpyxl
@@ -115,3 +115,50 @@ def export_delegates_pdf():
     doc.build(elements)
     output.seek(0)
     return send_file(output, mimetype='application/pdf', as_attachment=True, download_name='ignite_mun_2026_delegates.pdf')
+
+@export_bp.route('/export/receipt/<int:delegate_id>', methods=['GET'])
+def export_payment_receipt_pdf(delegate_id):
+    delegate = Delegate.query.get_or_404(delegate_id)
+    output = io.BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=A4, rightMargin=15*mm, leftMargin=15*mm, topMargin=15*mm, bottomMargin=15*mm)
+    styles = getSampleStyleSheet()
+
+    header_style = ParagraphStyle('RHeader', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor('#131b2e'), leading=22)
+    sub_style = ParagraphStyle('RSub', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor('#006c49'), leading=14)
+    normal_style = ParagraphStyle('RNorm', parent=styles['Normal'], fontSize=9, textColor=colors.HexColor('#45464d'), leading=12)
+
+    elements = [
+        Paragraph("OFFICIAL PAYMENT RECEIPT", header_style),
+        Paragraph("IGNITE MUN 2026 | SVU College of Engineering (SVUCE), Tirupati", sub_style),
+        Spacer(1, 4*mm),
+    ]
+
+    receipt_data = [
+        ["Receipt No:", f"REC-2026-{delegate.id:04d}", "Date:", delegate.created_at.strftime("%d %b %Y") if delegate.created_at else "12 Aug 2026"],
+        ["Delegate ID:", delegate.user_id or "DEL-2026-001", "Payment Status:", delegate.payment_status.upper()],
+        ["Delegate Name:", delegate.name, "Email:", delegate.email],
+        ["Institution:", delegate.college, "Committee:", delegate.committee or "UNSC"],
+        ["Transaction ID / UTR:", delegate.razorpay_payment_id or "UTR-998877665544", "Amount Paid:", "Rs. 50.00" if delegate.payment_status == 'paid' else "Rs. 0.00 (Free Slot)"],
+    ]
+
+    t = Table(receipt_data, colWidths=[35*mm, 55*mm, 35*mm, 55*mm])
+    t.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#191c1e')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f2f4f6')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e0e3e5')),
+        ('PADDING', (0, 0), (-1, -1), 6),
+    ]))
+
+    elements.append(t)
+    elements.append(Spacer(1, 8*mm))
+    elements.append(Paragraph("This document serves as official proof of registration payment for IGNITE MUN 2026 hosted by IGNITE Club at Sri Venkateswara University College of Engineering (SVUCE), Tirupati.", normal_style))
+    elements.append(Spacer(1, 4*mm))
+    elements.append(Paragraph("Authorized Stamp: [VERIFIED & STAMPED — IGNITE MUN 2026 SECRETARIAT]", ParagraphStyle('Stamp', parent=normal_style, textColor=colors.HexColor('#006c49'), fontName='Helvetica-Bold')))
+
+    doc.build(elements)
+    output.seek(0)
+    return send_file(output, mimetype='application/pdf', as_attachment=True, download_name=f'IGNITE_MUN_Receipt_{delegate.user_id or "001"}.pdf')

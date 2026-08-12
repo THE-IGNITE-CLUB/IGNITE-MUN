@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, make_response
-from app import db
+from extensions import db
 from models import Organizer
 from utils.credential_gen import generate_organizer_id, generate_password, hash_password
 from utils.email_service import send_organizer_approval_request, send_credentials_email

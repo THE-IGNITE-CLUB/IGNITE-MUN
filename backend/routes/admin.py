@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app import db
+from extensions import db
 from models import Delegate, Score, Session, Organizer
 
 admin_bp = Blueprint('admin', __name__)
@@ -67,6 +67,7 @@ def create_session():
         topic=data.get('topic', ''),
         total_time=int(data.get('total_time', 15)),
         speaking_time=int(data.get('speaking_time', 60)),
+        broadcast_message=data.get('broadcast_message', ''),
         is_active=True,
     )
     db.session.add(sess)
@@ -77,6 +78,29 @@ def create_session():
 def get_sessions():
     sessions = Session.query.order_by(Session.created_at.desc()).all()
     return jsonify([s.to_dict() for s in sessions])
+
+@admin_bp.route('/admin/active-session', methods=['GET'])
+def get_active_session():
+    committee = request.args.get('committee')
+    if committee:
+        sess = Session.query.filter_by(committee=committee, is_active=True).first()
+    else:
+        sess = Session.query.filter_by(is_active=True).order_by(Session.id.desc()).first()
+    return jsonify(sess.to_dict() if sess else None)
+
+@admin_bp.route('/admin/broadcast-session', methods=['POST'])
+def broadcast_session():
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    message = data.get('message', '').strip()
+
+    if session_id:
+        sess = Session.query.get(session_id)
+        if sess:
+            sess.broadcast_message = message
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Broadcast sent to delegates.', 'session': sess.to_dict()})
+    return jsonify({'success': False, 'message': 'Active session not found'}), 404
 
 @admin_bp.route('/admin/pending-payments', methods=['GET'])
 def pending_payments():

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app import db
+from extensions import db
 from models import Delegate
 from utils.credential_gen import generate_delegate_id, generate_password, hash_password
 from utils.email_service import send_credentials_email, send_payment_confirmation
