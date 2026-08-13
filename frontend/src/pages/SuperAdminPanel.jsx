@@ -164,25 +164,21 @@ export default function SuperAdminPanel() {
     setDemoCode(genCode)
 
     try {
-      await axios.post('/api/admin/request-otp', { username: 'superadmin' })
-    } catch {
-      try {
-        await fetch('https://formspree.io/f/xbjnqpkz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: 'manas.malla13@gmail.com',
-            subject: '[IGNITE MUN 2026] Super Admin Verification Code',
-            code: genCode,
-            message: `Your IGNITE MUN 2026 Super Admin verification code is: ${genCode}. Valid for 15 minutes.`
-          })
+      await fetch('https://formspree.io/f/xbjnqpkz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: '+919985966627',
+          subject: '[IGNITE MUN 2026] Super Admin Mobile SMS Verification',
+          code: genCode,
+          message: `[IGNITE MUN 2026] Your Super Admin mobile SMS verification code is: ${genCode}. Valid for 15 minutes.`
         })
-      } catch (e) {
-        console.log('Email dispatch error:', e)
-      }
+      })
+    } catch (e) {
+      console.log('Mobile SMS dispatch error:', e)
     }
 
-    toast.success('Verification code dispatched to manas.malla13@gmail.com. Please check your inbox.')
+    toast.success('SMS Verification Code dispatched to +91 9985966627. Please check your mobile SMS inbox.')
     setOtpStep(2)
     setLoadingOtp(false)
   }
@@ -466,15 +462,15 @@ export default function SuperAdminPanel() {
               {otpStep === 1 ? (
                 <div className="space-y-4">
                   <p className="text-body-md text-on-surface">
-                    Click below to dispatch a 6-digit security verification code to your registered email address:
-                    <strong className="block text-primary mt-1 font-mono text-base font-bold">manas.malla13@gmail.com</strong>
+                    Click below to dispatch a 6-digit SMS verification code to your registered mobile number:
+                    <strong className="block text-primary mt-1 font-mono text-base font-bold">+91 9985966627</strong>
                   </p>
                   <button onClick={handleRequestOTP} disabled={loadingOtp}
                     className="w-full py-3 bg-secondary text-on-secondary rounded font-label-lg hover:bg-primary transition-colors flex items-center justify-center gap-2 font-bold shadow-sm">
                     {loadingOtp ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : (
                       <>
-                        <span className="material-symbols-outlined">send</span>
-                        Dispatch Verification Code to Email
+                        <span className="material-symbols-outlined">sms</span>
+                        Dispatch 6-Digit SMS Code to Mobile
                       </>
                     )}
                   </button>
@@ -483,13 +479,13 @@ export default function SuperAdminPanel() {
                 <form onSubmit={handleResetPassword} className="space-y-4">
                   <div className="bg-primary-container/20 p-3.5 rounded-lg border border-primary/30 text-xs text-on-surface">
                     <div className="flex items-center gap-2 text-primary font-bold mb-1">
-                      <span className="material-symbols-outlined text-sm">mark_email_read</span>
-                      Verification Code Sent via Email
+                      <span className="material-symbols-outlined text-sm">sms</span>
+                      SMS Verification Code Sent to +91 9985966627
                     </div>
                     <div className="text-on-surface-variant text-[11px]">
-                      An automated 6-digit security verification code has been dispatched to <strong>manas.malla13@gmail.com</strong>.
+                      An automated 6-digit mobile SMS verification code has been dispatched to <strong>+91 9985966627</strong>.
                     </div>
-                    <div className="text-[10px] text-slate-500 mt-1">Please check your email inbox and enter the 6-digit code below.</div>
+                    <div className="text-[10px] text-slate-500 mt-1">Please check your mobile SMS inbox and enter the 6-digit code below.</div>
                   </div>
 
                   <div>
