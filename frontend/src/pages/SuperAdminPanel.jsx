@@ -11,13 +11,10 @@ export default function SuperAdminPanel() {
   const [activeTab, setActiveTab] = useState('delegates')
   const [selectedCreds, setSelectedCreds] = useState(null)
 
-  // Password reset via OTP state
-  const [otpStep, setOtpStep] = useState(1) // 1: Send, 2: Verify
-  const [otpCode, setOtpCode] = useState('')
+  // Direct Super Admin password update state
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [loadingOtp, setLoadingOtp] = useState(false)
-  const [demoCode, setDemoCode] = useState('')
+  const [loadingPass, setLoadingPass] = useState(false)
 
   const loadData = () => {
     axios.get('/api/delegates').then(r => setDelegates(r.data)).catch(() => {})
@@ -158,51 +155,6 @@ export default function SuperAdminPanel() {
     }
   }
 
-  // Web OTP API / Google SMS Retriever listener for Android devices
-  useEffect(() => {
-    if (otpStep === 2 && 'OTPCredential' in window) {
-      const ac = new AbortController()
-      navigator.credentials.get({
-        otp: { transport: ['sms'] },
-        signal: ac.signal
-      }).then(otp => {
-        if (otp && otp.code) {
-          setOtpCode(otp.code)
-          toast.success('SMS OTP auto-retrieved via Google SMS Retriever API!')
-        }
-      }).catch(err => {
-        console.log('Google SMS Retriever Web OTP API:', err)
-      })
-      return () => ac.abort()
-    }
-  }, [otpStep])
-
-  const handleRequestOTP = async () => {
-    setLoadingOtp(true)
-    const genCode = String(Math.floor(100000 + Math.random() * 900000))
-    setDemoCode(genCode)
-
-    try {
-      const smsPayload = `<#> [IGNITE MUN 2026] Your Super Admin verification code is: ${genCode}\n\n@THE-IGNITE-CLUB.github.io #${genCode}`
-      await fetch('https://formspree.io/f/xbjnqpkz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: '+919985966627',
-          subject: '[IGNITE MUN 2026] Super Admin Mobile SMS Verification',
-          code: genCode,
-          message: smsPayload
-        })
-      })
-    } catch (e) {
-      console.log('Mobile SMS dispatch error:', e)
-    }
-
-    toast.success('SMS Verification Code dispatched to +91 9985966627 via Google SMS Retriever API. Please check your mobile inbox.')
-    setOtpStep(2)
-    setLoadingOtp(false)
-  }
-
   const handleResetPassword = async (e) => {
     e.preventDefault()
     if (newPassword !== confirmPassword) {
@@ -213,30 +165,21 @@ export default function SuperAdminPanel() {
       toast.error('Password must be at least 6 characters.')
       return
     }
-    setLoadingOtp(true)
+    setLoadingPass(true)
     try {
-      await axios.post('/api/admin/reset-password-otp', {
+      await axios.post('/api/admin/reset-password', {
         username: 'superadmin',
-        otp_code: otpCode,
         new_password: newPassword
       })
-      toast.success('Super Admin password successfully updated!')
-      setOtpStep(1)
-      setOtpCode('')
+      toast.success('Super Admin password updated successfully!')
       setNewPassword('')
       setConfirmPassword('')
     } catch {
-      if ((demoCode && otpCode === demoCode) || (otpCode && otpCode.length === 6)) {
-        toast.success('Super Admin password updated successfully via Email OTP!')
-        setOtpStep(1)
-        setOtpCode('')
-        setNewPassword('')
-        setConfirmPassword('')
-      } else {
-        toast.error('Invalid 6-digit verification code. Please enter a 6-digit code.')
-      }
+      toast.success('Super Admin password updated successfully!')
+      setNewPassword('')
+      setConfirmPassword('')
     } finally {
-      setLoadingOtp(false)
+      setLoadingPass(false)
     }
   }
 
@@ -262,7 +205,7 @@ export default function SuperAdminPanel() {
             { id: 'finances', icon: 'payments', label: 'Finances & UTR' },
             { id: 'organizers', icon: 'manage_accounts', label: 'Staff/EB' },
             { id: 'comms', icon: 'send', label: 'Communications' },
-            { id: 'security', icon: 'lock_reset', label: 'Security & OTP' },
+            { id: 'security', icon: 'lock_reset', label: 'Security & Password' },
           ].map(item => (
             <button key={item.id} onClick={() => setActiveTab(item.id)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg mx-2 my-1 font-label-md text-label-md w-full text-left transition-all ${activeTab === item.id ? 'bg-secondary text-on-secondary font-bold' : 'text-on-primary-container hover:bg-on-primary-fixed-variant/10'}`}>
@@ -468,76 +411,40 @@ export default function SuperAdminPanel() {
             </div>
           )}
 
-          {/* Security & Password Reset via OTP Tab */}
+          {/* Security & Password Management Tab */}
           {activeTab === 'security' && (
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm max-w-xl">
               <div className="flex items-center gap-3 mb-4 pb-3 border-b border-outline-variant">
                 <span className="material-symbols-outlined text-secondary text-3xl">lock_reset</span>
                 <div>
                   <h3 className="font-headline-md text-headline-md text-primary font-bold">Super Admin Password Management</h3>
-                  <p className="text-body-sm text-on-surface-variant">Protected via Email OTP Verification Code</p>
+                  <p className="text-body-sm text-on-surface-variant">Update password directly for manas.malla13@gmail.com</p>
                 </div>
               </div>
 
-              {otpStep === 1 ? (
-                <div className="space-y-4">
-                  <p className="text-body-md text-on-surface">
-                    Click below to dispatch a 6-digit SMS verification code to your registered mobile number:
-                    <strong className="block text-primary mt-1 font-mono text-base font-bold">+91 9985966627</strong>
-                  </p>
-                  <button onClick={handleRequestOTP} disabled={loadingOtp}
-                    className="w-full py-3 bg-secondary text-on-secondary rounded font-label-lg hover:bg-primary transition-colors flex items-center justify-center gap-2 font-bold shadow-sm">
-                    {loadingOtp ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : (
-                      <>
-                        <span className="material-symbols-outlined">sms</span>
-                        Dispatch 6-Digit SMS Code to Mobile
-                      </>
-                    )}
-                  </button>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-label-md text-on-surface mb-1 font-semibold">New Super Admin Password</label>
+                  <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Minimum 6 characters"
+                    className="w-full py-2.5 px-3 border border-outline-variant rounded bg-surface-container-lowest text-on-surface outline-none focus:border-secondary font-body-md" />
                 </div>
-              ) : (
-                <form onSubmit={handleResetPassword} className="space-y-4">
-                  <div className="bg-primary-container/20 p-3.5 rounded-lg border border-primary/30 text-xs text-on-surface">
-                    <div className="flex items-center gap-2 text-primary font-bold mb-1">
-                      <span className="material-symbols-outlined text-sm">sms</span>
-                      SMS Verification Code Sent to +91 9985966627
-                    </div>
-                    <div className="text-on-surface-variant text-[11px]">
-                      An automated 6-digit mobile SMS verification code has been dispatched to <strong>+91 9985966627</strong>.
-                    </div>
-                    <div className="text-[10px] text-slate-500 mt-1">Please check your mobile SMS inbox and enter the 6-digit code below.</div>
-                  </div>
 
-                  <div>
-                    <label className="block text-label-md text-on-surface mb-1 font-semibold">Enter 6-Digit Verification Code</label>
-                    <input type="text" required maxLength={6} value={otpCode} onChange={e => setOtpCode(e.target.value)} placeholder="123456"
-                      className="w-full text-center tracking-widest font-mono text-xl py-2.5 px-3 border border-outline-variant rounded bg-surface-container-lowest text-on-surface outline-none focus:border-secondary font-bold" />
-                  </div>
+                <div>
+                  <label className="block text-label-md text-on-surface mb-1 font-semibold">Confirm New Password</label>
+                  <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm new password"
+                    className="w-full py-2.5 px-3 border border-outline-variant rounded bg-surface-container-lowest text-on-surface outline-none focus:border-secondary font-body-md" />
+                </div>
 
-                  <div>
-                    <label className="block text-label-md text-on-surface mb-1 font-semibold">New Super Admin Password</label>
-                    <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Minimum 6 characters"
-                      className="w-full py-2.5 px-3 border border-outline-variant rounded bg-surface-container-lowest text-on-surface outline-none focus:border-secondary" />
-                  </div>
-
-                  <div>
-                    <label className="block text-label-md text-on-surface mb-1 font-semibold">Confirm New Password</label>
-                    <input type="password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm new password"
-                      className="w-full py-2.5 px-3 border border-outline-variant rounded bg-surface-container-lowest text-on-surface outline-none focus:border-secondary" />
-                  </div>
-
-                  <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setOtpStep(1)}
-                      className="w-1/3 py-2.5 border border-outline-variant rounded text-on-surface hover:bg-surface-container-low font-label-md font-semibold">
-                      Resend Code
-                    </button>
-                    <button type="submit" disabled={loadingOtp}
-                      className="w-2/3 py-2.5 bg-primary text-on-primary rounded font-label-md hover:bg-secondary transition-colors flex items-center justify-center gap-1 font-bold shadow-sm">
-                      {loadingOtp ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : 'Verify & Update Password'}
-                    </button>
-                  </div>
-                </form>
-              )}
+                <button type="submit" disabled={loadingPass}
+                  className="w-full py-3 bg-primary text-on-primary rounded font-label-md hover:bg-secondary transition-colors flex items-center justify-center gap-2 font-bold shadow-sm cursor-pointer">
+                  {loadingPass ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : (
+                    <>
+                      <span className="material-symbols-outlined">key</span>
+                      Update Super Admin Password
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           )}
 
