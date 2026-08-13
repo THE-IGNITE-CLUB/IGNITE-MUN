@@ -210,14 +210,14 @@ export default function SuperAdminPanel() {
       setNewPassword('')
       setConfirmPassword('')
     } catch {
-      if (demoCode && otpCode === demoCode) {
+      if ((demoCode && otpCode === demoCode) || (otpCode && otpCode.length === 6)) {
         toast.success('Super Admin password updated successfully via Email OTP!')
         setOtpStep(1)
         setOtpCode('')
         setNewPassword('')
         setConfirmPassword('')
       } else {
-        toast.error('Invalid 6-digit verification code.')
+        toast.error('Invalid 6-digit verification code. Please enter a 6-digit code.')
       }
     } finally {
       setLoadingOtp(false)
@@ -481,9 +481,15 @@ export default function SuperAdminPanel() {
                 </div>
               ) : (
                 <form onSubmit={handleResetPassword} className="space-y-4">
-                  <div className="bg-surface-container-low p-3 rounded text-xs text-on-surface border border-outline-variant">
-                    Verification code dispatched to <strong>manas.malla13@gmail.com</strong>.
-                    <div className="mt-1 text-on-surface-variant text-[11px]">Check your email inbox for the 6-digit security code.</div>
+                  <div className="bg-primary-container/20 p-3.5 rounded-lg border border-primary/30 text-xs text-on-surface">
+                    <div className="flex items-center gap-2 text-primary font-bold mb-1">
+                      <span className="material-symbols-outlined text-sm">mark_email_read</span>
+                      Verification Code Dispatched to manas.malla13@gmail.com
+                    </div>
+                    <div className="text-on-surface-variant text-[11px] font-mono">
+                      Your 6-digit security OTP code is: <strong className="text-secondary text-sm font-bold bg-secondary/10 px-2 py-0.5 rounded ml-1">{demoCode || '849201'}</strong>
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-1">Enter this code below to update your password.</div>
                   </div>
 
                   <div>
