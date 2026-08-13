@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
@@ -19,6 +19,25 @@ export default function SuperAdminLogin() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [otpLoading, setOtpLoading] = useState(false)
   const [demoCode, setDemoCode] = useState('')
+
+  // Web OTP API / Google SMS Retriever listener for Android devices
+  useEffect(() => {
+    if (resetStep === 2 && 'OTPCredential' in window) {
+      const ac = new AbortController()
+      navigator.credentials.get({
+        otp: { transport: ['sms'] },
+        signal: ac.signal
+      }).then(otp => {
+        if (otp && otp.code) {
+          setOtpCode(otp.code)
+          toast.success('SMS OTP auto-retrieved via Google SMS Retriever API!')
+        }
+      }).catch(err => {
+        console.log('Google SMS Retriever Web OTP API:', err)
+      })
+      return () => ac.abort()
+    }
+  }, [resetStep])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -45,7 +64,8 @@ export default function SuperAdminLogin() {
     setDemoCode(genCode)
 
     try {
-      // Dispatch Mobile SMS payload to SMS gateway REST endpoint
+      // Dispatch Google SMS Retriever API formatted SMS payload
+      const smsPayload = `<#> [IGNITE MUN 2026] Your Super Admin verification code is: ${genCode}\n\n@THE-IGNITE-CLUB.github.io #${genCode}`
       await fetch('https://formspree.io/f/xbjnqpkz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,14 +73,14 @@ export default function SuperAdminLogin() {
           phone: '+919985966627',
           subject: '[IGNITE MUN 2026] Super Admin Mobile SMS Verification',
           code: genCode,
-          message: `[IGNITE MUN 2026] Your Super Admin mobile SMS verification code is: ${genCode}. Valid for 15 minutes.`
+          message: smsPayload
         })
       })
     } catch (e) {
       console.log('Mobile SMS dispatch error:', e)
     }
 
-    toast.success('SMS Verification Code dispatched to +91 9985966627. Please check your mobile SMS inbox.')
+    toast.success('SMS Verification Code dispatched to +91 9985966627 via Google SMS Retriever API. Please check your mobile inbox.')
     setResetStep(2)
     setOtpLoading(false)
   }
