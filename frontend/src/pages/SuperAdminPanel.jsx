@@ -484,12 +484,12 @@ export default function SuperAdminPanel() {
                   <div className="bg-primary-container/20 p-3.5 rounded-lg border border-primary/30 text-xs text-on-surface">
                     <div className="flex items-center gap-2 text-primary font-bold mb-1">
                       <span className="material-symbols-outlined text-sm">mark_email_read</span>
-                      Verification Code Dispatched to manas.malla13@gmail.com
+                      Verification Code Sent via Email
                     </div>
-                    <div className="text-on-surface-variant text-[11px] font-mono">
-                      Your 6-digit security OTP code is: <strong className="text-secondary text-sm font-bold bg-secondary/10 px-2 py-0.5 rounded ml-1">{demoCode || '849201'}</strong>
+                    <div className="text-on-surface-variant text-[11px]">
+                      An automated 6-digit security verification code has been dispatched to <strong>manas.malla13@gmail.com</strong>.
                     </div>
-                    <div className="text-[10px] text-slate-500 mt-1">Enter this code below to update your password.</div>
+                    <div className="text-[10px] text-slate-500 mt-1">Please check your email inbox and enter the 6-digit code below.</div>
                   </div>
 
                   <div>
