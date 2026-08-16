@@ -45,10 +45,10 @@ export default function SuperAdminLogin() {
           <div className="p-8">
             <form onSubmit={submit} className="space-y-6">
               <div className="space-y-2">
-                <label className="block font-label-md text-label-md text-on-surface font-semibold">Institutional Super Admin Email</label>
+                <label className="block font-label-md text-label-md text-on-surface font-semibold">Admin Identifier</label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
-                  <input type="email" readOnly value="manas.malla13@gmail.com"
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">manage_accounts</span>
+                  <input type="text" readOnly value="IGNITE MUN 2026 — Super Admin"
                     className="block w-full pl-10 pr-3 py-3 border border-outline-variant bg-surface-container-low text-on-surface rounded font-body-md text-body-md opacity-80 cursor-not-allowed font-semibold" />
                 </div>
               </div>

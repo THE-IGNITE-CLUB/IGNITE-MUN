@@ -67,7 +67,9 @@ def request_otp():
     if not admin:
         return jsonify({'success': False, 'message': f'Admin user "{username}" not found'}), 404
 
-    target_email = admin.email or 'manas.malla13@gmail.com'
+    target_email = admin.email
+    if not target_email:
+        return jsonify({'success': False, 'message': 'No email configured for this admin account'}), 400
     otp_code = str(random.randint(100000, 999999))
     expires_at = datetime.now(IST) + timedelta(minutes=15)
 
@@ -110,7 +112,9 @@ def reset_password_otp():
     if not admin:
         return jsonify({'success': False, 'message': f'Admin user "{username}" not found'}), 404
 
-    target_email = admin.email or 'manas.malla13@gmail.com'
+    target_email = admin.email
+    if not target_email:
+        return jsonify({'success': False, 'message': 'No email configured for this admin account'}), 400
 
     # Fetch latest valid OTP record for this email
     otp_record = AdminOTP.query.filter_by(

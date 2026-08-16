@@ -8,34 +8,46 @@ organizers_bp = Blueprint('organizers', __name__)
 
 @organizers_bp.route('/organizer/register', methods=['POST'])
 def register_organizer():
-    data = request.get_json()
-    if Organizer.query.filter_by(email=data.get('email', '')).first():
-        return jsonify({'success': False, 'message': 'Email already registered'}), 409
-
-    organizer = Organizer(
-        name=data.get('name', ''),
-        email=data.get('email', ''),
-        phone=data.get('phone', ''),
-        designation=data.get('designation', ''),
-        role=data.get('role', 'oc'),
-        department=data.get('department', ''),
-        committee=data.get('committee', ''),
-        ignite_role=data.get('ignite_role', ''),
-        ignite_batch=data.get('ignite_batch', ''),
-        experience=data.get('experience', ''),
-        statement=data.get('statement', ''),
-        status='pending',
-    )
-    db.session.add(organizer)
-    db.session.commit()
-
-    # Send approval request email to admin
     try:
-        send_organizer_approval_request(organizer)
-    except Exception as e:
-        print(f"Email error: {e}")
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'Invalid request body'}), 400
 
-    return jsonify({'success': True, 'message': 'Application submitted. You will receive credentials once approved by the secretariat.'}), 201
+        if not data.get('name') or not data.get('email'):
+            return jsonify({'success': False, 'message': 'Name and email are required'}), 400
+
+        if Organizer.query.filter_by(email=data.get('email', '')).first():
+            return jsonify({'success': False, 'message': 'Email already registered'}), 409
+
+        organizer = Organizer(
+            name=data.get('name', ''),
+            email=data.get('email', ''),
+            phone=data.get('phone', ''),
+            designation=data.get('designation', ''),
+            role=data.get('role', 'oc'),
+            department=data.get('department', ''),
+            committee=data.get('committee', ''),
+            ignite_role=data.get('ignite_role', ''),
+            ignite_batch=data.get('ignite_batch', ''),
+            experience=data.get('experience', ''),
+            statement=data.get('statement', ''),
+            status='pending',
+        )
+        db.session.add(organizer)
+        db.session.commit()
+
+        # Send approval request email to admin (non-blocking)
+        try:
+            send_organizer_approval_request(organizer)
+        except Exception as e:
+            print(f"[EMAIL WARNING] Could not send approval request email: {e}")
+
+        return jsonify({'success': True, 'message': 'Application submitted. You will receive credentials once approved by the secretariat.'}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ORGANIZER REGISTRATION ERROR] {e}")
+        return jsonify({'success': False, 'message': 'Submission failed due to a server error. Please try again.'}), 500
 
 @organizers_bp.route('/organizer/approve/<int:org_id>', methods=['GET', 'POST'])
 def approve_organizer(org_id):

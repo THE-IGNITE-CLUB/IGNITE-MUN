@@ -18,7 +18,6 @@ export default function Navbar() {
         <Link to="/campus" className={`text-label-md font-label-md transition-colors ${isActive('/campus') ? 'text-secondary font-bold border-b-2 border-secondary pb-1' : 'text-on-surface-variant hover:text-secondary'}`}>University</Link>
         <Link to="/hybrid-diplomacy" className={`text-label-md font-label-md transition-colors ${isActive('/hybrid-diplomacy') ? 'text-secondary font-bold border-b-2 border-secondary pb-1' : 'text-on-surface-variant hover:text-secondary'}`}>Committees</Link>
         <Link to="/organizer/register" className={`text-label-md font-label-md transition-colors ${isActive('/organizer/register') ? 'text-secondary font-bold border-b-2 border-secondary pb-1' : 'text-on-surface-variant hover:text-secondary'}`}>Staff Apply</Link>
-        <Link to="/admin/login" className={`text-label-md font-label-md transition-colors ${isActive('/admin/login') || isActive('/admin/super') ? 'text-secondary font-bold border-b-2 border-secondary pb-1' : 'text-on-surface-variant hover:text-secondary'}`}>Super Admin</Link>
         <Link to="/login" className={`text-label-md font-label-md transition-colors ${isActive('/login') ? 'text-secondary font-bold border-b-2 border-secondary pb-1' : 'text-on-surface-variant hover:text-secondary'}`}>Login</Link>
         <Link to="/register" className="ml-4 px-6 py-2 bg-primary-container text-on-primary rounded font-label-md text-label-md hover:bg-tertiary-container transition-colors shadow-sm">
           Register Now

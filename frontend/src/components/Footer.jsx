@@ -19,7 +19,6 @@ export default function Footer() {
           <Link to="/register" className="text-surface-variant opacity-80 hover:text-white transition-all">Register</Link>
           <Link to="/organizer/register" className="text-surface-variant opacity-80 hover:text-white transition-all">Staff Apply</Link>
           <Link to="/login" className="text-surface-variant opacity-80 hover:text-white transition-all">Delegate Login</Link>
-          <Link to="/admin/login" className="text-surface-variant opacity-80 hover:text-white transition-all">Admin</Link>
         </div>
 
         {/* Contact + Copyright */}

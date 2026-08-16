@@ -164,7 +164,7 @@ export default function OrganizerRegister() {
                 {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined icon-filled">send</span>}
                 {loading ? 'Submitting Application…' : 'Submit Application'}
               </button>
-              <p className="text-xs text-on-surface-variant text-center font-body-md">Your application will be reviewed by the secretariat. Approval email sent to manas.malla13@gmail.com.</p>
+              <p className="text-xs text-on-surface-variant text-center font-body-md">Your application will be reviewed by the secretariat. You will be notified once approved.</p>
             </form>
           </div>
         </div>

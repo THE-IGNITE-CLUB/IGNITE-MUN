@@ -21,7 +21,7 @@ export default function Login() {
     try {
       const data = await login(form.user_id, form.password)
       if (data.role === 'delegate') navigate('/dashboard')
-      else if (data.role === 'super_admin') navigate('/admin/super')
+      else if (data.role === 'super_admin') navigate('/admin')
       else if (data.role === 'admin') navigate('/admin')
       else if (data.role === 'eb') navigate('/admin/eb')
       else navigate('/')
@@ -100,10 +100,7 @@ export default function Login() {
               Not registered?&nbsp;
               <Link to="/register" className="text-secondary hover:underline font-semibold">Register Now</Link>
             </p>
-            <p className="text-center mt-2 text-xs text-on-surface-variant font-body-md">
-              Secretariat login →&nbsp;
-              <Link to="/admin/login" className="text-on-tertiary-container hover:underline">Admin Access</Link>
-            </p>
+
           </div>
         </div>
       </main>
