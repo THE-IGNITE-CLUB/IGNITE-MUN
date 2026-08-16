@@ -21,7 +21,7 @@ export default function Login() {
     try {
       const data = await login(form.user_id, form.password)
       if (data.role === 'delegate') navigate('/dashboard')
-      else if (data.role === 'super_admin') navigate('/admin')
+      else if (data.role === 'super_admin') navigate('/admin/super')
       else if (data.role === 'admin') navigate('/admin')
       else if (data.role === 'eb') navigate('/admin/eb')
       else navigate('/')

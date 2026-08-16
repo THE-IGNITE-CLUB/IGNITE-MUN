@@ -12,8 +12,11 @@ import DelegateDashboard from './pages/DelegateDashboard'
 import PaymentPage from './pages/PaymentPage'
 import PaymentSuccess from './pages/PaymentSuccess'
 import OrganizerRegister from './pages/OrganizerRegister'
+// Admin pages — routes exist but are NOT linked anywhere in the UI
+import SuperAdminLogin from './pages/SuperAdminLogin'
 import AdminPanel from './pages/AdminPanel'
 import EBCommandCenter from './pages/EBCommandCenter'
+import SuperAdminPanel from './pages/SuperAdminPanel'
 import CampusExplore from './pages/CampusExplore'
 import HybridDiplomacy from './pages/HybridDiplomacy'
 import NotFound from './pages/NotFound'
@@ -36,6 +39,8 @@ export default function App() {
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/organizer/register" element={<OrganizerRegister />} />
+          {/* Admin routes — hidden from UI, accessible via direct URL only */}
+          <Route path="/admin/login" element={<SuperAdminLogin />} />
           <Route path="/admin" element={
             <ProtectedRoute allowedRoles={['super_admin', 'eb', 'oc', 'admin']}>
               <AdminPanel />
@@ -44,6 +49,11 @@ export default function App() {
           <Route path="/admin/eb" element={
             <ProtectedRoute allowedRoles={['super_admin', 'eb', 'admin']}>
               <EBCommandCenter />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/super" element={
+            <ProtectedRoute allowedRoles={['super_admin']}>
+              <SuperAdminPanel />
             </ProtectedRoute>
           } />
           <Route path="/campus" element={<CampusExplore />} />
