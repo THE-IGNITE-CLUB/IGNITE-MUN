@@ -43,13 +43,19 @@ export function AuthProvider({ children }) {
     }
 
     // Static Web Deployment Auth Fallback
+    const SUPER_ADMIN_PASS = 'SuperAdmin#2026!Sec'
     let fallbackRole = 'delegate'
     let fallbackUser = { user_id: userId, name: 'Delegate', committee: 'UNSC', payment_status: 'paid', id: 1 }
 
-    const uidLower = String(userId).toLowerCase()
-    if (uidLower === 'superadmin' || uidLower.includes('super')) {
-      fallbackRole = 'super_admin'
-      fallbackUser = { username: 'superadmin', role: 'super_admin', name: 'Super Admin' }
+    const uidLower = String(userId).toLowerCase().trim()
+    if (uidLower === 'superadmin') {
+      if (password === SUPER_ADMIN_PASS) {
+        fallbackRole = 'super_admin'
+        fallbackUser = { username: 'superadmin', role: 'super_admin', name: 'Super Admin' }
+      } else {
+        // Wrong password for super admin — throw to trigger error toast
+        throw new Error('Invalid Super Admin credentials')
+      }
     } else if (uidLower.startsWith('org') || uidLower.startsWith('eb') || uidLower === 'admin') {
       fallbackRole = 'eb'
       fallbackUser = { user_id: userId, name: 'Executive Board Member', role: 'eb', committee: 'UNSC' }
