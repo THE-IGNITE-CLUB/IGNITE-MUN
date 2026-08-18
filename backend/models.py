@@ -37,6 +37,7 @@ class Delegate(db.Model):
             'name': self.name,
             'class_': self.class_,
             'college': self.college,
+            'institution': self.college,  # alias for frontend compatibility
             'email': self.email,
             'phone': self.phone,
             'committee': self.committee,
@@ -47,6 +48,7 @@ class Delegate(db.Model):
             'delegation_assigned': self.delegation_assigned,
             'delegation_sent': self.delegation_sent,
             'credentials_sent': self.credentials_sent,
+            'utr_number': self.razorpay_payment_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 

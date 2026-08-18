@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../utils/api'
 import toast from 'react-hot-toast'
 import PageWrapper from '../components/PageWrapper'
 import Navbar from '../components/Navbar'
@@ -48,7 +48,7 @@ export default function PaymentPage() {
     setUtrState(UTR_STATE.CHECKING)
     setUtrMessage('')
     try {
-      const res = await axios.post('/api/payment/validate-utr', { utr_number: trimmed })
+      const res = await api.post('/api/payment/validate-utr', { utr_number: trimmed })
       if (res.data.valid) {
         setUtrState(UTR_STATE.VALID)
         setUtrMessage(res.data.message)
@@ -80,7 +80,7 @@ export default function PaymentPage() {
     }
     setSubmitting(true)
     try {
-      await axios.post('/api/payment/confirm', {
+      await api.post('/api/payment/confirm', {
         delegate_id: state.delegate_id,
         utr_number: utr.trim(),
       })

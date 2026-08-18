@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 
 const AuthContext = createContext(null)
 
@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    axios.get('/api/me').then(res => {
+    api.get('/api/me').then(res => {
       if (res.data && res.data.data) {
         setUser(res.data.data)
         setRole(res.data.role)
@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
 
   const login = async (userId, password) => {
     try {
-      const res = await axios.post('/api/login', { user_id: userId, password })
+      const res = await api.post('/api/login', { user_id: userId, password })
       if (res.data && res.data.data) {
         setUser(res.data.data)
         setRole(res.data.role)
@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
   }
 
   const logout = async () => {
-    try { await axios.post('/api/logout') } catch {}
+    try { await api.post('/api/logout') } catch {}
     setUser(null)
     setRole(null)
     localStorage.removeItem('ignite_user')

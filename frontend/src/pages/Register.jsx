@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../utils/api'
 import toast from 'react-hot-toast'
 import PageWrapper from '../components/PageWrapper'
 import Navbar from '../components/Navbar'
@@ -33,7 +33,7 @@ export default function Register() {
   const positions = form.committee === 'UNSC' ? UNSC_COUNTRIES : form.committee === 'INTERNATIONAL_PRESS' ? IP_POSITIONS : LOK_SABHA_POSITIONS
 
   useEffect(() => {
-    axios.get('/api/stats').then(r => setStats(r.data)).catch(() => {})
+    api.get('/api/stats').then(r => setStats(r.data)).catch(() => {})
   }, [])
 
   const handle = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -43,7 +43,7 @@ export default function Register() {
     if (!form.position_1) return toast.error('Please select at least one position preference.')
     setLoading(true)
     try {
-      const res = await axios.post('/api/register', form)
+      const res = await api.post('/api/register', form)
       const data = res.data
       if (data.payment_required) {
         navigate('/payment', { state: { delegate_id: data.delegate_id, user_id: data.user_id, name: form.name } })

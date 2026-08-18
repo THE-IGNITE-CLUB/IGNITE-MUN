@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../utils/api'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import PageWrapper from '../components/PageWrapper'
@@ -25,13 +25,13 @@ export default function DelegateDashboard() {
 
   const loadQueries = () => {
     if (user && user.id) {
-      axios.get(`/api/queries/delegate/${user.id}`).then(r => setQueries(r.data)).catch(() => {})
+      api.get(`/api/queries/delegate/${user.id}`).then(r => setQueries(r.data)).catch(() => {})
     }
   }
 
   const loadActiveSession = () => {
     if (user && user.committee) {
-      axios.get(`/api/admin/active-session?committee=${user.committee}`).then(r => setActiveSession(r.data)).catch(() => {})
+      api.get(`/api/admin/active-session?committee=${user.committee}`).then(r => setActiveSession(r.data)).catch(() => {})
     }
   }
 
@@ -50,7 +50,7 @@ export default function DelegateDashboard() {
     }
     setSubmittingQuery(true)
     try {
-      const res = await axios.post('/api/queries/create', {
+      const res = await api.post('/api/queries/create', {
         delegate_id: user.id,
         subject: querySubject || 'General Secretariat Inquiry',
         question: queryQuestion

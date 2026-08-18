@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import axios from 'axios'
+import api from '../utils/api'
 import toast from 'react-hot-toast'
 import PageWrapper from '../components/PageWrapper'
 import Navbar from '../components/Navbar'
@@ -25,7 +25,7 @@ export default function OrganizerRegister() {
     e.preventDefault()
     setLoading(true)
     try {
-      await axios.post('/api/organizer/register', form)
+      await api.post('/api/organizer/register', form)
       toast.success('Application submitted! You will receive credentials once approved.')
       navigate('/')
     } catch (err) {

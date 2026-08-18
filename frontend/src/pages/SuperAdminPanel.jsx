@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 import toast from 'react-hot-toast'
 import PageWrapper from '../components/PageWrapper'
 
@@ -11,16 +11,25 @@ export default function SuperAdminPanel() {
   const [activeTab, setActiveTab] = useState('delegates')
   const [selectedCreds, setSelectedCreds] = useState(null)
 
+  // Assign delegation state
+  const [assigningId, setAssigningId] = useState(null)
+  const [delegationInput, setDelegationInput] = useState('')
+
+  // Broadcast state
+  const [broadcastSubject, setBroadcastSubject] = useState('')
+  const [broadcastContent, setBroadcastContent] = useState('')
+  const [broadcastLoading, setBroadcastLoading] = useState(false)
+
   // Direct Super Admin password update state
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loadingPass, setLoadingPass] = useState(false)
 
   const loadData = () => {
-    axios.get('/api/delegates').then(r => setDelegates(r.data)).catch(() => {})
-    axios.get('/api/organizers').then(r => setOrganizers(r.data)).catch(() => {})
-    axios.get('/api/admin/stats').then(r => setStats(r.data)).catch(() => {})
-    axios.get('/api/admin/pending-payments').then(r => setPendingPayments(r.data)).catch(() => {})
+    api.get('/api/delegates').then(r => setDelegates(r.data)).catch(() => {})
+    api.get('/api/organizers').then(r => setOrganizers(r.data)).catch(() => {})
+    api.get('/api/admin/stats').then(r => setStats(r.data)).catch(() => {})
+    api.get('/api/admin/pending-payments').then(r => setPendingPayments(r.data)).catch(() => {})
   }
 
   useEffect(() => {
@@ -143,11 +152,22 @@ export default function SuperAdminPanel() {
     printWindow.document.close()
   }
 
-  const resendCredentials = (id, name) => toast.success(`Credentials resent to ${name}.`)
+  const handleAssignDelegation = async (delegateId) => {
+    if (!delegationInput.trim()) { toast.error('Please enter a delegation name.'); return }
+    try {
+      await api.post(`/api/delegates/${delegateId}/assign-delegation`, { delegation: delegationInput.trim() })
+      toast.success(`Delegation "${delegationInput.trim()}" assigned & email sent!`)
+      setAssigningId(null)
+      setDelegationInput('')
+      loadData()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to assign delegation.')
+    }
+  }
 
   const handleVerifyPayment = async (delegateId) => {
     try {
-      const res = await axios.post(`/api/payment/verify/${delegateId}`)
+      const res = await api.post(`/api/payment/verify/${delegateId}`)
       toast.success(res.data.message || 'Payment verified & credentials dispatched!')
       loadData()
     } catch (err) {
@@ -157,21 +177,12 @@ export default function SuperAdminPanel() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault()
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match.')
-      return
-    }
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters.')
-      return
-    }
+    if (newPassword !== confirmPassword) { toast.error('Passwords do not match.'); return }
+    if (newPassword.length < 6) { toast.error('Password must be at least 6 characters.'); return }
     setLoadingPass(true)
     try {
-      await axios.post('/api/admin/reset-password', {
-        username: 'superadmin',
-        new_password: newPassword
-      })
-      toast.success('Super Admin password updated successfully!')
+      const res = await api.post('/api/admin/reset-password', { username: 'superadmin', new_password: newPassword })
+      toast.success(res.data.message || 'Super Admin password updated successfully!')
       setNewPassword('')
       setConfirmPassword('')
     } catch {
@@ -183,7 +194,33 @@ export default function SuperAdminPanel() {
     }
   }
 
+  const handleBroadcast = async (e) => {
+    e.preventDefault()
+    if (!broadcastContent.trim()) { toast.error('Announcement content cannot be empty.'); return }
+    setBroadcastLoading(true)
+    try {
+      for (const committee of ['UNSC', 'LOK_SABHA', 'INTERNATIONAL_PRESS']) {
+        await api.post('/api/admin/session', {
+          committee,
+          session_type: 'Broadcast',
+          topic: broadcastSubject || 'Secretariat Announcement',
+          total_time: 0,
+          speaking_time: 60,
+          broadcast_message: `📢 ${broadcastSubject ? broadcastSubject + ': ' : ''}${broadcastContent.trim()}`
+        })
+      }
+      toast.success('Broadcast dispatched to all delegates across all committees!')
+      setBroadcastSubject('')
+      setBroadcastContent('')
+    } catch {
+      toast.error('Failed to dispatch broadcast. Please try again.')
+    } finally {
+      setBroadcastLoading(false)
+    }
+  }
+
   const totalRevenue = (stats.paid || 0) * 1200
+
 
   return (
     <PageWrapper className="!flex-row">
@@ -233,13 +270,16 @@ export default function SuperAdminPanel() {
               <h2 className="font-headline-xl text-headline-xl text-primary mb-1 font-bold">Super Admin Command Center</h2>
               <p className="font-body-lg text-body-lg text-on-surface-variant">Full control over finances, credentialing, security &amp; communications</p>
             </div>
+            <button onClick={loadData} className="flex items-center gap-2 px-3 py-2 text-xs bg-surface-container border border-outline-variant rounded text-on-surface-variant hover:bg-surface-container-low transition-colors">
+              <span className="material-symbols-outlined text-sm">refresh</span>Refresh
+            </button>
           </header>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: 'Total Delegates', val: stats.total_delegates || 0, icon: 'people' },
-              { label: 'Revenue Collected', val: `₹${totalRevenue}`, icon: 'account_balance_wallet' },
+              { label: 'Revenue Collected', val: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: 'account_balance_wallet' },
               { label: 'Paid Registrations', val: stats.paid || 0, icon: 'payments' },
               { label: 'Free Slots Claimed', val: stats.free || 0, icon: 'local_offer' },
             ].map((c, i) => (
@@ -267,7 +307,7 @@ export default function SuperAdminPanel() {
                     <th className="p-3">Email</th>
                     <th className="p-3">Institution</th>
                     <th className="p-3">Committee</th>
-                    <th className="p-3">Portfolio</th>
+                    <th className="p-3">Portfolio / Assign</th>
                     <th className="p-3">Payment</th>
                     <th className="p-3">Actions</th>
                   </tr>
@@ -278,9 +318,29 @@ export default function SuperAdminPanel() {
                       <td className="p-3 font-mono font-bold text-primary">{d.user_id}</td>
                       <td className="p-3 font-bold text-on-surface">{d.name}</td>
                       <td className="p-3 text-on-surface-variant text-xs">{d.email}</td>
-                      <td className="p-3 text-on-surface-variant">{d.institution || '—'}</td>
+                      <td className="p-3 text-on-surface-variant">{d.institution || d.college || 'SVUCE'}</td>
                       <td className="p-3 font-semibold">{d.committee}</td>
-                      <td className="p-3 font-semibold text-secondary">{d.delegation_assigned || 'Pending'}</td>
+                      <td className="p-3">
+                        {assigningId === d.id ? (
+                          <div className="flex items-center gap-1">
+                            <input autoFocus value={delegationInput} onChange={e => setDelegationInput(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') handleAssignDelegation(d.id); if (e.key === 'Escape') { setAssigningId(null); setDelegationInput('') } }}
+                              placeholder="e.g. United States"
+                              className="border border-outline-variant rounded px-2 py-1 text-xs bg-surface-container-lowest text-on-surface outline-none focus:border-secondary w-32" />
+                            <button onClick={() => handleAssignDelegation(d.id)} className="p-1 bg-secondary text-on-secondary rounded hover:bg-primary transition-colors">
+                              <span className="material-symbols-outlined text-xs">check</span>
+                            </button>
+                            <button onClick={() => { setAssigningId(null); setDelegationInput('') }} className="p-1 bg-surface-container border border-outline-variant rounded text-on-surface-variant hover:bg-surface-container-low transition-colors">
+                              <span className="material-symbols-outlined text-xs">close</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <button onClick={() => { setAssigningId(d.id); setDelegationInput(d.delegation_assigned || '') }}
+                            className={`text-xs font-semibold px-2 py-1 rounded border transition-colors ${d.delegation_assigned ? 'text-secondary border-secondary/20 bg-secondary/5 hover:bg-secondary/10' : 'text-on-surface-variant border-outline-variant hover:text-primary'}`}>
+                            {d.delegation_assigned || '+ Assign Portfolio'}
+                          </button>
+                        )}
+                      </td>
                       <td className="p-3">
                         <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${d.payment_status === 'paid' ? 'bg-secondary/20 text-secondary' : d.payment_status === 'free' ? 'bg-primary/20 text-primary' : 'bg-error/20 text-error'}`}>
                           {d.payment_status}
@@ -336,11 +396,13 @@ export default function SuperAdminPanel() {
                           <td className="p-3 font-bold text-on-surface">{p.name}</td>
                           <td className="p-3 text-xs text-on-surface-variant">
                             <div>{p.email}</div>
-                            <div className="font-mono text-slate-500">{p.phone}</div>
+                            <div className="font-mono text-slate-500">{p.phone || 'No phone'}</div>
                           </td>
-                          <td className="p-3 font-semibold">{p.committee}</td>
-                          <td className="p-3 font-mono font-bold text-primary bg-primary/5 px-2 py-1 rounded inline-block my-2">
-                            {p.utr_number || 'Pending Submission'}
+                          <td className="p-3 font-semibold">{p.committee || 'N/A'}</td>
+                          <td className="p-3">
+                            <span className="font-mono font-bold text-primary bg-primary/5 px-2 py-1 rounded inline-block">
+                              {p.utr_number || p.utr || 'Pending Submission'}
+                            </span>
                           </td>
                           <td className="p-3 font-bold text-secondary">₹1,200 INR</td>
                           <td className="p-3 text-right">
@@ -450,24 +512,34 @@ export default function SuperAdminPanel() {
 
           {/* Communications Tab */}
           {activeTab === 'comms' && (
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm max-w-xl">
-              <h3 className="font-headline-md text-headline-md text-primary mb-4 font-bold">Broadcast Announcement</h3>
-              <p className="text-body-sm text-on-surface-variant mb-4">Send email &amp; dashboard notifications to all registered delegates</p>
-              <form onSubmit={e => { e.preventDefault(); toast.success('Broadcast notification dispatched to all delegates!') }} className="space-y-4">
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm max-w-2xl">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-outline-variant">
+                <span className="material-symbols-outlined text-secondary text-2xl">campaign</span>
                 <div>
-                  <label className="block text-label-md text-on-surface mb-1 font-semibold">Broadcast Subject</label>
-                  <input type="text" required placeholder="Important Announcement from Secretariat"
+                  <h3 className="font-headline-md text-headline-md text-primary font-bold">Broadcast Announcement</h3>
+                  <p className="text-body-sm text-on-surface-variant">Send live dashboard notifications to ALL delegates across all committees instantly</p>
+                </div>
+              </div>
+              <form onSubmit={handleBroadcast} className="space-y-4">
+                <div>
+                  <label className="block text-label-md text-on-surface mb-1 font-semibold">Broadcast Subject <span className="text-on-surface-variant font-normal">(optional)</span></label>
+                  <input type="text" placeholder="e.g. Schedule Update, Venue Change"
+                    value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)}
                     className="w-full py-2.5 px-3 border border-outline-variant rounded bg-surface-container-lowest text-on-surface outline-none focus:border-secondary font-body-md" />
                 </div>
                 <div>
-                  <label className="block text-label-md text-on-surface mb-1 font-semibold">Announcement Content</label>
-                  <textarea required rows={4} placeholder="Type announcement content here..."
+                  <label className="block text-label-md text-on-surface mb-1 font-semibold">Announcement Content <span className="text-error">*</span></label>
+                  <textarea required rows={4} placeholder="Type the announcement to broadcast to all delegates..."
+                    value={broadcastContent} onChange={e => setBroadcastContent(e.target.value)}
                     className="w-full py-2.5 px-3 border border-outline-variant rounded bg-surface-container-lowest text-on-surface outline-none focus:border-secondary font-body-md" />
                 </div>
-                <button type="submit"
-                  className="w-full py-3 bg-secondary text-on-secondary rounded font-label-md hover:bg-primary transition-colors font-bold shadow-sm flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined">send</span>
-                  Dispatch Broadcast Announcement
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs text-on-surface-variant">
+                  <span className="material-symbols-outlined text-xs mr-1 align-middle">info</span>
+                  This will broadcast to <strong className="text-primary">all {stats.total_delegates || 0} delegates</strong> across UNSC, Lok Sabha, and International Press simultaneously via their live dashboard.
+                </div>
+                <button type="submit" disabled={broadcastLoading}
+                  className="w-full py-3 bg-secondary text-on-secondary rounded font-label-md hover:bg-primary transition-colors font-bold shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                  {broadcastLoading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <><span className="material-symbols-outlined">notifications_active</span>Dispatch Broadcast to All Delegates</>}
                 </button>
               </form>
             </div>

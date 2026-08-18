@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import axios from 'axios'
+import api from '../utils/api'
 import toast from 'react-hot-toast'
 import PageWrapper from '../components/PageWrapper'
 
@@ -39,11 +39,11 @@ export default function EBCommandCenter() {
   }
 
   const loadQueries = () => {
-    axios.get('/api/queries/all').then(r => setQueries(r.data)).catch(() => {})
+    api.get('/api/queries/all').then(r => setQueries(r.data)).catch(() => {})
   }
 
   useEffect(() => {
-    axios.get('/api/delegates').then(r => setDelegates(r.data)).catch(() => {})
+    api.get('/api/delegates').then(r => setDelegates(r.data)).catch(() => {})
     loadQueries()
   }, [])
 
@@ -66,7 +66,7 @@ export default function EBCommandCenter() {
 
   const publishTopic = async () => {
     try {
-      const res = await axios.post('/api/admin/session', {
+      const res = await api.post('/api/admin/session', {
         committee,
         session_type: sessionType,
         topic,
@@ -81,13 +81,14 @@ export default function EBCommandCenter() {
   }
 
   const handleRespondQuery = async (queryId) => {
-    const text = responses[queryId]?.strip ? responses[queryId].strip() : responses[queryId]
+    const rawText = responses[queryId]
+    const text = typeof rawText === 'string' ? rawText.trim() : (rawText || '')
     if (!text) {
       toast.error('Please enter a response.')
       return
     }
     try {
-      const res = await axios.post(`/api/queries/respond/${queryId}`, { response: text })
+      const res = await api.post(`/api/queries/respond/${queryId}`, { response: text })
       toast.success(res.data.message || 'Response sent to delegate!')
       loadQueries()
     } catch {
@@ -98,7 +99,7 @@ export default function EBCommandCenter() {
   const saveScore = async (delegateId) => {
     const s = scores[delegateId] || {}
     try {
-      await axios.post('/api/admin/scores', { delegate_id: delegateId, session_id: 1, ...s })
+      await api.post('/api/admin/scores', { delegate_id: delegateId, session_id: 1, ...s })
       toast.success('Score saved successfully!')
     } catch {
       toast.error('Failed to save score.')

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../utils/api'
 import toast from 'react-hot-toast'
 import PageWrapper from '../components/PageWrapper'
 
@@ -14,9 +14,9 @@ export default function AdminPanel() {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    axios.get('/api/admin/stats').then(r => setStats(r.data)).catch(() => {})
-    axios.get('/api/delegates').then(r => setDelegates(r.data)).catch(() => {})
-    axios.get('/api/admin/pending-payments').then(r => setPendingPayments(r.data)).catch(() => {})
+    api.get('/api/admin/stats').then(r => setStats(r.data)).catch(() => {})
+    api.get('/api/delegates').then(r => setDelegates(r.data)).catch(() => {})
+    api.get('/api/admin/pending-payments').then(r => setPendingPayments(r.data)).catch(() => {})
   }, [])
 
   const filtered = delegates.filter(d =>
@@ -28,14 +28,14 @@ export default function AdminPanel() {
   const saveScore = async (delegateId, sessionId = 1) => {
     const s = scores[delegateId] || {}
     try {
-      await axios.post('/api/admin/scores', { delegate_id: delegateId, session_id: sessionId, ...s })
+      await api.post('/api/admin/scores', { delegate_id: delegateId, session_id: sessionId, ...s })
       toast.success('Score saved!')
     } catch { toast.error('Failed to save score.') }
   }
 
   const verifyPayment = async (delegateId) => {
     try {
-      await axios.post(`/api/payment/verify/${delegateId}`)
+      await api.post(`/api/payment/verify/${delegateId}`)
       toast.success('Payment verified! Credentials sent.')
       setPendingPayments(pp => pp.filter(p => p.id !== delegateId))
     } catch { toast.error('Failed to verify payment.') }
@@ -44,7 +44,7 @@ export default function AdminPanel() {
   const assignDelegation = async (delegateId, delegation) => {
     if (!delegation.trim()) return
     try {
-      await axios.post(`/api/delegates/${delegateId}/assign-delegation`, { delegation })
+      await api.post(`/api/delegates/${delegateId}/assign-delegation`, { delegation })
       toast.success(`Delegation "${delegation}" assigned!`)
     } catch { toast.error('Failed to assign delegation.') }
   }

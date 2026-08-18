@@ -111,9 +111,30 @@ def pending_payments():
             'id': d.id,
             'name': d.name,
             'email': d.email,
+            'phone': d.phone or '',
             'college': d.college,
+            'institution': d.college,
+            'committee': d.committee or '',
             'user_id': d.user_id,
             'utr': d.razorpay_payment_id,
+            'utr_number': d.razorpay_payment_id,
             'created_at': d.created_at.isoformat() if d.created_at else None,
         })
     return jsonify(result)
+
+@admin_bp.route('/admin/reset-password', methods=['POST'])
+def reset_admin_password():
+    from models import Admin
+    import bcrypt
+    data = request.get_json() or {}
+    username = data.get('username', 'superadmin')
+    new_password = data.get('new_password', '').strip()
+    if not new_password or len(new_password) < 6:
+        return jsonify({'success': False, 'message': 'Password must be at least 6 characters'}), 400
+    admin = Admin.query.filter_by(username=username).first()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Admin account not found'}), 404
+    hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
+    admin.password_hash = hashed.decode()
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Super Admin password updated successfully!'})
