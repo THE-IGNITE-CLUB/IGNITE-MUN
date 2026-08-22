@@ -135,7 +135,17 @@ def create_app():
     # Init extensions
     db.init_app(app)
     mail.init_app(app)
-    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+    CORS(app,
+         resources={r"/api/*": {"origins": [
+             "https://the-ignite-club.github.io",
+             "http://localhost:5173",
+             "http://localhost:3000",
+             "http://127.0.0.1:5173",
+         ]}},
+         supports_credentials=True,
+         allow_headers=["Content-Type", "Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    )
 
     # Register blueprints
     from routes.auth import auth_bp
