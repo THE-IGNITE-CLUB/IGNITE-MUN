@@ -138,6 +138,7 @@ def create_app():
     CORS(app,
          resources={r"/api/*": {"origins": [
              "https://the-ignite-club.github.io",
+             "https://i-mun.onrender.com",
              "http://localhost:5173",
              "http://localhost:3000",
              "http://127.0.0.1:5173",

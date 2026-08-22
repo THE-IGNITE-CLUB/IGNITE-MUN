@@ -21,7 +21,7 @@ services:
       - key: FRONTEND_URL
         value: "https://the-ignite-club.github.io/IGNITE-MUN"
       - key: BACKEND_URL
-        value: "https://ignite-mun-backend.onrender.com"
+        value: "https://i-mun.onrender.com"
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET

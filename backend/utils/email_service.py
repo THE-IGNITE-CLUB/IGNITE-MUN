@@ -4,7 +4,7 @@ import os
 
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'manas.malla13@gmail.com')
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://the-ignite-club.github.io/IGNITE-MUN')
-BACKEND_URL = os.getenv('BACKEND_URL', 'https://ignite-mun-backend.onrender.com')
+BACKEND_URL = os.getenv('BACKEND_URL', 'https://i-mun.onrender.com')
 
 def send_organizer_approval_request(organizer):
     """Send email to admin for organizer approval."""
