@@ -1,0 +1,60 @@
+# fly.toml — Fly.io config for IGNITE MUN 2026 Backend
+
+app = "ignite-mun-backend"
+primary_region = "sin"  # Singapore — closest to India
+
+[build]
+
+[env]
+  PORT = "8080"
+  FREE_SLOTS = "10"
+  CONFERENCE_DATE = "2026-12-01T07:00:00+05:30"
+  FRONTEND_URL = "https://the-ignite-club.github.io/IGNITE-MUN"
+
+[[services]]
+  http_checks = []
+  internal_port = 8080
+  protocol = "tcp"
+  script_checks = []
+
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"
+
+  [[services.http_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "get"
+    path = "/api/stats"
+    protocol = "http"
+    timeout = "10s"
+
+[[mounts]]
+  source = "ignite_mun_data"
+  destination = "/app/instance"
+
+[checks]
+  [checks.alive]
+    grace_period = "10s"
+    interval = "30s"
+    method = "get"
+    path = "/api/stats"
+    port = 8080
+    timeout = "10s"
+    type = "http"
