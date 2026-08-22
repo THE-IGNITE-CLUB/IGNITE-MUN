@@ -53,14 +53,16 @@ def register_delegate():
         db.session.commit()
 
         # If free slot, attempt to send credentials (non-blocking — email failure won't fail registration)
+        email_sent = False
         if is_free:
             try:
                 send_credentials_email(delegate.email, delegate.name, user_id, password)
                 delegate.credentials_sent = True
                 db.session.commit()
+                email_sent = True
             except Exception as e:
-                print(f"[EMAIL WARNING] Could not send credentials email: {e}")
-                # Registration still succeeds even if email fails
+                import sys
+                print(f"[EMAIL ERROR] Could not send credentials email to {delegate.email}: {e}", file=sys.stderr)
 
         return jsonify({
             'success': True,
@@ -69,7 +71,8 @@ def register_delegate():
             'user_id': user_id if is_free else None,
             'payment_required': not is_free,
             'amount': 0 if is_free else 50,
-            'message': 'Registration successful! Credentials will be sent to your email.' if is_free else 'Registration received. Please complete payment.'
+            'email_sent': email_sent,
+            'message': 'Registration successful! Credentials sent to your email.' if (is_free and email_sent) else ('Registration successful! Save your Delegate ID shown below.' if is_free else 'Registration received. Please complete payment.')
         }), 201
 
     except Exception as e:

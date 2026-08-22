@@ -1,4 +1,5 @@
 import { useLocation, Link } from 'react-router-dom'
+import { useState } from 'react'
 import PageWrapper from '../components/PageWrapper'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -9,6 +10,16 @@ export default function PaymentSuccess() {
   const name = state?.name || 'Delegate'
   const email = state?.email || ''
   const utr = state?.utr
+  const userId = state?.user_id
+  const [copied, setCopied] = useState(false)
+
+  const copyId = () => {
+    if (userId) {
+      navigator.clipboard.writeText(userId)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   return (
     <PageWrapper>
@@ -25,7 +36,7 @@ export default function PaymentSuccess() {
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant mb-8">
             {isFree
-              ? `Welcome ${name}! Your registration is confirmed and credentials have been sent to ${email}.`
+              ? `Welcome ${name}! Your registration is confirmed. Credentials sent to ${email}.`
               : `Thank you ${name}! Your UTR has been submitted for verification. Credentials will be emailed within 2–6 hours once verified.`}
           </p>
 
@@ -39,10 +50,25 @@ export default function PaymentSuccess() {
                     <span className="material-symbols-outlined text-sm icon-filled">check_circle</span> Free Slot Secured
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm mb-3">
                   <span className="text-on-surface-variant font-label-md text-label-md">Amount</span>
                   <span className="font-bold text-secondary">₹0 (Free)</span>
                 </div>
+                {/* Show User ID on screen as fallback for email */}
+                {userId && (
+                  <div className="mt-4 pt-4 border-t border-outline-variant/50">
+                    <p className="text-xs text-on-surface-variant uppercase font-label-sm mb-2">Your Delegate ID (save this!)</p>
+                    <div className="flex items-center justify-between bg-primary-container/10 border border-primary-container/30 rounded-lg px-4 py-3">
+                      <span className="font-mono font-bold text-primary-container text-lg tracking-widest">{userId}</span>
+                      <button onClick={copyId} className="ml-3 text-primary-container hover:text-primary transition-colors" title="Copy">
+                        <span className="material-symbols-outlined text-base">{copied ? 'check' : 'content_copy'}</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-2">
+                      ⚠️ Your password was sent to <strong>{email}</strong>. Check spam if not received. Use this ID + password to login.
+                    </p>
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -84,3 +110,4 @@ export default function PaymentSuccess() {
     </PageWrapper>
   )
 }
+

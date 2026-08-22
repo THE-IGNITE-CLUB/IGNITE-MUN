@@ -120,9 +120,14 @@ def create_app():
     app = Flask(__name__)
 
     # Config
-    app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'fallback_secret')
+    app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'ignite_mun_secret_2026_xK9qL')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ignite_mun_2026.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Session cookie settings — required for cross-origin (GitHub Pages → Render)
+    app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
 
     # Mail Config
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -130,7 +135,9 @@ def create_app():
     app.config['MAIL_USE_TLS'] = True
     app.config['MAIL_USERNAME'] = os.getenv('GMAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.getenv('GMAIL_APP_PASSWORD')
-    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('GMAIL_USERNAME')
+    app.config['MAIL_DEFAULT_SENDER'] = ("IGNITE MUN 2026", os.getenv('GMAIL_USERNAME'))
+    app.config['MAIL_SUPPRESS_SEND'] = False
+    app.config['MAIL_ASCII_ATTACHMENTS'] = False
 
     # Init extensions
     db.init_app(app)
@@ -139,6 +146,7 @@ def create_app():
          resources={r"/api/*": {"origins": [
              "https://the-ignite-club.github.io",
              "https://i-mun.onrender.com",
+             "https://ignite-mun-backend.fly.dev",
              "http://localhost:5173",
              "http://localhost:3000",
              "http://127.0.0.1:5173",

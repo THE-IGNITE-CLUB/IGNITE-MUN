@@ -48,7 +48,10 @@ export default function Register() {
       if (data.payment_required) {
         navigate('/payment', { state: { delegate_id: data.delegate_id, user_id: data.user_id, name: form.name } })
       } else {
-        navigate('/payment/success', { state: { free: true, name: form.name, email: form.email } })
+        if (!data.email_sent) {
+          toast('Email delivery failed — save your Delegate ID from the next screen!', { icon: '⚠️', duration: 6000 })
+        }
+        navigate('/payment/success', { state: { free: true, name: form.name, email: form.email, user_id: data.user_id } })
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed. Please try again.')
